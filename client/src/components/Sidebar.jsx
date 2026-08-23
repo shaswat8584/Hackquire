@@ -1,5 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useChat } from '../context/ChatContext';
+import { useConnection } from '../context/ConnectionContext';
 import {
   LayoutDashboard,
   Users,
@@ -8,12 +10,18 @@ import {
   UserCircle,
   Shield,
   FileText,
+  MessageSquare,
+  UserPlus,
   X,
   Sparkles,
+  Bot,
 } from 'lucide-react';
+
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const { totalUnreadCount } = useChat();
+  const { pendingIncomingCount } = useConnection();
 
   const navItems = [
     {
@@ -22,10 +30,18 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: LayoutDashboard,
     },
     {
+      name: 'Messages',
+      path: '/messages',
+      icon: MessageSquare,
+      badge: totalUnreadCount > 0 ? (totalUnreadCount > 99 ? '99+' : `${totalUnreadCount}`) : null,
+      badgeColor: 'bg-rose-500 text-white',
+    },
+    {
       name: 'SkillMatch',
       path: '/skillmatch',
       icon: Users,
       badge: '60/20/20',
+      badgeColor: 'bg-indigo-100/80 text-indigo-700',
     },
     {
       name: 'Opportunities',
@@ -37,6 +53,14 @@ const Sidebar = ({ isOpen, onClose }) => {
       path: '/teams',
       icon: Layers,
     },
+    {
+      name: 'My Network',
+      path: '/network',
+      icon: UserPlus,
+      badge: pendingIncomingCount > 0 ? `${pendingIncomingCount}` : null,
+      badgeColor: 'bg-indigo-600 text-white',
+    },
+
     {
       name: 'My Profile',
       path: '/profile',
@@ -53,6 +77,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: FileText,
     },
   ];
+
 
   return (
     <>
@@ -109,7 +134,11 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </div>
 
                 {item.badge && (
-                  <span className="text-[10px] bg-indigo-100/80 text-indigo-700 px-1.5 py-0.5 rounded font-mono font-bold">
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
+                      item.badgeColor || 'bg-indigo-100/80 text-indigo-700'
+                    }`}
+                  >
                     {item.badge}
                   </span>
                 )}
@@ -118,17 +147,38 @@ const Sidebar = ({ isOpen, onClose }) => {
           })}
         </div>
 
-        {/* Sidebar Footer Info Card */}
-        <div className="p-4 border-t border-slate-100 m-3 rounded-2xl bg-gradient-to-br from-indigo-50/70 via-sky-50/50 to-slate-50 border-indigo-100/60">
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-950 mb-1">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Matching Engine</span>
+        {/* Sidebar Footer AI Assistant Launcher */}
+        <div className="p-3.5 m-3 rounded-2xl bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 text-white border border-indigo-500/30 shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-indigo-600/50 border border-indigo-400/40 flex items-center justify-center text-indigo-300">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-xs font-bold block leading-tight">AI Assistant</span>
+                <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Online Guide
+                </span>
+              </div>
+            </div>
           </div>
-          <p className="text-[11px] text-slate-600 leading-relaxed">
-            Automatic 60% skills + 20% interest + 20% availability pairing.
+          <p className="text-[11px] text-slate-300 leading-relaxed mb-3">
+            Instant FAQ, role requirements & matchmaking guide.
           </p>
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('open_ai_assistant'));
+              if (onClose) onClose();
+            }}
+            className="w-full py-2 px-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/30 hover:scale-[1.02]"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Ask AI Assistant</span>
+          </button>
         </div>
       </aside>
+
     </>
   );
 };

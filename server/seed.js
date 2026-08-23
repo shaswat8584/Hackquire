@@ -3,6 +3,9 @@ const dotenv = require('dotenv');
 const User = require('./models/User');
 const Opportunity = require('./models/Opportunity');
 const Team = require('./models/Team');
+const Connection = require('./models/Connection');
+const Conversation = require('./models/Conversation');
+const Message = require('./models/Message');
 
 dotenv.config();
 
@@ -16,6 +19,9 @@ const seedData = async () => {
     await User.deleteMany({});
     await Opportunity.deleteMany({});
     await Team.deleteMany({});
+    await Connection.deleteMany({});
+    await Conversation.deleteMany({});
+    await Message.deleteMany({});
     console.log('[Seed] Cleared old data');
 
     // Create Demo Students
@@ -136,6 +142,7 @@ const seedData = async () => {
     const priya = users[3];
     const ananya = users[4];
     const rohan = users[5];
+    const sneha = users[6];
 
     // Create Opportunities
     const opportunities = await Opportunity.create([
@@ -270,6 +277,135 @@ const seedData = async () => {
     ]);
 
     console.log(`[Seed] Created ${teams.length} teams`);
+
+    // Create Connections / Friendships
+    await Connection.create([
+      {
+        requester: shaswat._id,
+        recipient: rahul._id,
+        status: 'accepted',
+      },
+      {
+        requester: shaswat._id,
+        recipient: priya._id,
+        status: 'accepted',
+      },
+      {
+        requester: aman._id,
+        recipient: shaswat._id,
+        status: 'pending',
+      },
+      {
+        requester: sneha._id,
+        recipient: shaswat._id,
+        status: 'pending',
+      },
+    ]);
+
+    console.log('[Seed] Created sample student connections');
+
+    // Create 1-on-1 Direct Conversations
+    const convShaswatRahul = await Conversation.create({
+      type: 'direct',
+      participants: [shaswat._id, rahul._id],
+      unreadCounts: [
+        { user: shaswat._id, count: 0 },
+        { user: rahul._id, count: 0 },
+      ],
+      lastMessageAt: new Date(Date.now() - 10 * 60 * 1000),
+    });
+
+    const m1 = await Message.create({
+      conversation: convShaswatRahul._id,
+      sender: shaswat._id,
+      text: 'Hey Rahul! I checked out your VisionTrack project. The multi-object tracking setup is super slick!',
+      createdAt: new Date(Date.now() - 30 * 60 * 1000),
+      readBy: [{ user: shaswat._id }, { user: rahul._id }],
+    });
+
+    const m2 = await Message.create({
+      conversation: convShaswatRahul._id,
+      sender: rahul._id,
+      text: 'Thanks Shaswat! I saw your AI Campus Assistant opportunity. I can train an embedding model for student queries.',
+      createdAt: new Date(Date.now() - 20 * 60 * 1000),
+      readBy: [{ user: shaswat._id }, { user: rahul._id }],
+    });
+
+    const m3 = await Message.create({
+      conversation: convShaswatRahul._id,
+      sender: shaswat._id,
+      text: "That would be awesome! Let's sync up on the architecture tonight.",
+      createdAt: new Date(Date.now() - 10 * 60 * 1000),
+      readBy: [{ user: shaswat._id }, { user: rahul._id }],
+    });
+
+    convShaswatRahul.lastMessage = m3._id;
+    await convShaswatRahul.save();
+
+    // Direct Conversation between Shaswat & Priya
+    const convShaswatPriya = await Conversation.create({
+      type: 'direct',
+      participants: [shaswat._id, priya._id],
+      unreadCounts: [
+        { user: shaswat._id, count: 1 },
+        { user: priya._id, count: 0 },
+      ],
+      lastMessageAt: new Date(Date.now() - 5 * 60 * 1000),
+    });
+
+    const mp1 = await Message.create({
+      conversation: convShaswatPriya._id,
+      sender: priya._id,
+      text: 'Hey Shaswat, I have set up the MongoDB schemas and Redis caching layer for the project!',
+      createdAt: new Date(Date.now() - 5 * 60 * 1000),
+      readBy: [{ user: priya._id }],
+    });
+
+    convShaswatPriya.lastMessage = mp1._id;
+    await convShaswatPriya.save();
+
+    // Team Channel Conversation for AI Campus Assistant
+    const aiTeam = teams[0];
+    const convTeam = await Conversation.create({
+      type: 'team',
+      team: aiTeam._id,
+      participants: [shaswat._id, rahul._id, priya._id],
+      unreadCounts: [
+        { user: shaswat._id, count: 0 },
+        { user: rahul._id, count: 0 },
+        { user: priya._id, count: 0 },
+      ],
+      lastMessageAt: new Date(Date.now() - 2 * 60 * 1000),
+    });
+
+    const mt1 = await Message.create({
+      conversation: convTeam._id,
+      sender: shaswat._id,
+      text: 'Welcome to the AI Campus Assistant squad everyone! 🚀 Our goal is to complete the core prototype in 4 weeks.',
+      createdAt: new Date(Date.now() - 15 * 60 * 1000),
+      readBy: [{ user: shaswat._id }, { user: rahul._id }, { user: priya._id }],
+    });
+
+    const mt2 = await Message.create({
+      conversation: convTeam._id,
+      sender: priya._id,
+      text: 'Database schemas are deployed! API docs are ready on Swagger.',
+      createdAt: new Date(Date.now() - 10 * 60 * 1000),
+      readBy: [{ user: shaswat._id }, { user: rahul._id }, { user: priya._id }],
+    });
+
+    const mt3 = await Message.create({
+      conversation: convTeam._id,
+      sender: rahul._id,
+      text: 'Great progress. I am finalizing the embedding pipeline now.',
+      createdAt: new Date(Date.now() - 2 * 60 * 1000),
+      readBy: [{ user: shaswat._id }, { user: rahul._id }, { user: priya._id }],
+    });
+
+    convTeam.lastMessage = mt3._id;
+    await convTeam.save();
+
+    console.log('[Seed] Created sample conversations & message threads');
     console.log('[Seed] Database seed completed successfully!');
     process.exit(0);
   } catch (error) {

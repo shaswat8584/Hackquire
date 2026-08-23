@@ -1,5 +1,20 @@
 import React, { useState } from 'react';
-import { User, Clock, Briefcase, Sparkles, ExternalLink, Send, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useConnection } from '../context/ConnectionContext';
+import {
+  User,
+  Clock,
+  Briefcase,
+  Sparkles,
+  ExternalLink,
+  Send,
+  Check,
+  UserPlus,
+  UserCheck,
+  MessageSquare,
+  Loader2,
+} from 'lucide-react';
 import MatchScore from './MatchScore';
 
 const StudentCard = ({
@@ -10,13 +25,47 @@ const StudentCard = ({
   onInvite,
   onViewProfile,
 }) => {
-  const [connected, setConnected] = useState(false);
+  const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const {
+    getConnectionStatus,
+    getConnectionId,
+    sendRequest,
+    acceptRequest,
+  } = useConnection();
+
+  const [actionLoading, setActionLoading] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
   if (!student) return null;
 
-  const handleConnect = () => {
-    setConnected(true);
-    setTimeout(() => setConnected(false), 3000);
+  const isSelf = currentUser?._id === student._id || currentUser?.id === student._id;
+  const status = getConnectionStatus(student._id);
+  const connectionId = getConnectionId(student._id);
+
+  const handleSendConnection = async () => {
+    setActionLoading(true);
+    const res = await sendRequest(student._id);
+    setActionLoading(false);
+    if (!res.success) {
+      setFeedback(res.message);
+      setTimeout(() => setFeedback(null), 3000);
+    }
+  };
+
+  const handleAcceptConnection = async () => {
+    if (!connectionId) return;
+    setActionLoading(true);
+    const res = await acceptRequest(connectionId);
+    setActionLoading(false);
+    if (!res.success) {
+      setFeedback(res.message);
+      setTimeout(() => setFeedback(null), 3000);
+    }
+  };
+
+  const handleDirectMessage = () => {
+    navigate(`/messages?user=${student._id}`);
   };
 
   return (
@@ -33,7 +82,14 @@ const StudentCard = ({
             }}
           />
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-slate-900 truncate">{student.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900 truncate">{student.name}</h3>
+              {isSelf && (
+                <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">
+                  You
+                </span>
+              )}
+            </div>
             <p className="text-xs font-semibold text-indigo-600 truncate mt-0.5">
               {student.preferredRoles && student.preferredRoles.length > 0
                 ? student.preferredRoles.join(' • ')
@@ -108,6 +164,12 @@ const StudentCard = ({
           />
         )}
 
+        {feedback && (
+          <div className="text-[11px] text-rose-600 bg-rose-50 p-2 rounded-lg text-center">
+            {feedback}
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <button
             onClick={() => onViewProfile && onViewProfile(student)}
@@ -116,6 +178,7 @@ const StudentCard = ({
             View Profile
           </button>
 
+          {/* If Invite is requested (from TeamForge candidate modal) */}
           {onInvite ? (
             <button
               onClick={() => onInvite(student)}
@@ -124,25 +187,50 @@ const StudentCard = ({
               <Send className="w-3.5 h-3.5" />
               Invite
             </button>
-          ) : (
-            <button
-              onClick={handleConnect}
-              className={`flex-1 py-2 px-3 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-                connected
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-200'
-              }`}
-            >
-              {connected ? (
-                <>
-                  <Check className="w-3.5 h-3.5" />
-                  Connected
-                </>
-              ) : (
-                'Connect'
-              )}
-            </button>
-          )}
+          ) : !isSelf ? (
+            /* Connection / Message Action buttons */
+            status === 'accepted' ? (
+              <button
+                onClick={handleDirectMessage}
+                className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-indigo-200"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Message
+              </button>
+            ) : status === 'pending_received' ? (
+              <button
+                onClick={handleAcceptConnection}
+                disabled={actionLoading}
+                className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                {actionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserCheck className="w-3.5 h-3.5" />}
+                Accept
+              </button>
+            ) : status === 'pending_sent' ? (
+              <button
+                disabled
+                className="flex-1 py-2 px-3 bg-slate-100 text-slate-500 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-not-allowed border border-slate-200/60"
+              >
+                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                Requested
+              </button>
+            ) : (
+              <button
+                onClick={handleSendConnection}
+                disabled={actionLoading}
+                className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-indigo-200 disabled:opacity-50"
+              >
+                {actionLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <UserPlus className="w-3.5 h-3.5" />
+                    Connect
+                  </>
+                )}
+              </button>
+            )
+          ) : null}
         </div>
       </div>
     </div>

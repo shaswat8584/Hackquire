@@ -1,5 +1,6 @@
 import React from 'react';
-import { Users, UserPlus, AlertCircle, CheckCircle2, Clock, UserMinus, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, UserPlus, AlertCircle, CheckCircle2, Clock, UserMinus, Shield, MessageSquare } from 'lucide-react';
 
 const TeamCard = ({
   team,
@@ -9,7 +10,9 @@ const TeamCard = ({
   onUpdateMember,
   onLeaveTeam,
 }) => {
+  const navigate = useNavigate();
   if (!team) return null;
+
 
   const isOwner = team.owner?._id === currentUserId || team.owner === currentUserId;
   const isMember = (team.members || []).some(
@@ -196,6 +199,16 @@ const TeamCard = ({
 
       {/* Footer Actions */}
       <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+        {(isOwner || isMember) && (
+          <button
+            onClick={() => navigate(`/messages?team=${team._id}`)}
+            className="flex-1 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-indigo-200/80"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
+            Team Chat
+          </button>
+        )}
+
         {isOwner ? (
           <button
             onClick={() => onInviteMember && onInviteMember(team)}
@@ -219,3 +232,4 @@ const TeamCard = ({
 };
 
 export default TeamCard;
+

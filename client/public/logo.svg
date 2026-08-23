@@ -1,0 +1,11 @@
+﻿<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="14,35 40,35 26,65 0,65" fill="url(#logo-gradient)" />
+  <polygon points="65,0 100,65 64,65 50,100 20,100 42,35 26,35 38,10" fill="url(#logo-gradient)" />
+  <defs>
+    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc" />
+      <stop offset="50%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#818cf8" />
+    </linearGradient>
+  </defs>
+</svg>

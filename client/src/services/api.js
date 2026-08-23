@@ -72,4 +72,25 @@ export const teamAPI = {
   leave: (teamId) => api.post(`/teams/${teamId}/leave`),
 };
 
+export const connectionAPI = {
+  getMyConnections: () => api.get('/connections'),
+  getConnectionStatuses: () => api.get('/connections/statuses'),
+  sendRequest: (recipientId) => api.post(`/connections/request/${recipientId}`),
+  acceptRequest: (connectionId) => api.put(`/connections/${connectionId}/accept`),
+  rejectRequest: (connectionId) => api.put(`/connections/${connectionId}/reject`),
+  cancelRequest: (connectionId) => api.delete(`/connections/${connectionId}/cancel`),
+  removeConnection: (connectionId) => api.delete(`/connections/${connectionId}`),
+};
+
+export const conversationAPI = {
+  getConversations: () => api.get('/conversations'),
+  getTotalUnread: () => api.get('/conversations/unread-total'),
+  getOrCreateDirect: (recipientId) => api.post(`/conversations/direct/${recipientId}`),
+  getOrCreateTeam: (teamId) => api.get(`/conversations/team/${teamId}`),
+  getMessages: (conversationId) => api.get(`/conversations/${conversationId}/messages`),
+  sendMessage: (conversationId, data) => api.post(`/conversations/${conversationId}/messages`, data),
+  markAsRead: (conversationId) => api.put(`/conversations/${conversationId}/read`),
+};
+
 export default api;
+

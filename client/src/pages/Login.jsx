@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Mail, Lock, AlertCircle, ArrowRight, UserCheck } from 'lucide-react';
+import { LogoIcon } from '../components/Logo';
+import { Mail, Lock, AlertCircle, ArrowRight, UserCheck } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -49,9 +50,7 @@ const Login = () => {
         {/* Card Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md">
-              <Sparkles className="w-5 h-5" />
-            </div>
+            <div className="w-11 h-11 rounded-2xl bg-slate-100 p-2 flex items-center justify-center shadow-sm border border-slate-200/80"><LogoIcon className="w-full h-full" /></div>
             <span className="text-2xl font-black text-slate-900">SkillBridge</span>
           </Link>
           <h2 className="text-xl font-bold text-slate-900">Welcome Back</h2>
@@ -96,7 +95,7 @@ const Login = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
                 />
               </div>
@@ -121,7 +120,7 @@ const Login = () => {
           {/* Quick Demo Logins */}
           <div className="mt-6 pt-6 border-t border-slate-100">
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center mb-3">
-              ⚡ 1-Click Demo Accounts
+              âš¡ 1-Click Demo Accounts
             </p>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -173,3 +172,4 @@ const Login = () => {
 };
 
 export default Login;
+

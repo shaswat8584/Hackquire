@@ -18,7 +18,9 @@ import {
   Plus,
   Shield,
   Layers,
+  MessageSquare,
 } from 'lucide-react';
+
 
 const OpportunityDetails = () => {
   const { id } = useParams();
@@ -277,15 +279,25 @@ const OpportunityDetails = () => {
                         </div>
                       </div>
 
-                      <span className="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-bold text-[10px] uppercase">
-                        {app.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigate(`/messages?user=${app.user?._id || app.user}`)}
+                          className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors flex items-center gap-1 text-[11px]"
+                        >
+                          <MessageSquare className="w-3 h-3 text-indigo-600" />
+                          Message
+                        </button>
+                        <span className="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-bold text-[10px] uppercase">
+                          {app.status}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
           )}
+
         </div>
 
         {/* Sidebar Match & Action Card (Right 1 col) */}
@@ -350,7 +362,7 @@ const OpportunityDetails = () => {
             </div>
 
             {/* Action Button */}
-            <div className="pt-3 border-t border-slate-800">
+            <div className="pt-3 border-t border-slate-800 space-y-2.5">
               {isCreator ? (
                 <div className="p-3 bg-slate-800 rounded-xl text-center text-xs text-slate-300">
                   You created this opportunity
@@ -368,8 +380,25 @@ const OpportunityDetails = () => {
                   Apply to this Opportunity
                 </button>
               )}
+
+              {!isCreator && opportunity.createdBy && (
+                <button
+                  onClick={() =>
+                    navigate(
+                      `/messages?user=${
+                        opportunity.createdBy?._id || opportunity.createdBy
+                      }`
+                    )
+                  }
+                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-700"
+                >
+                  <MessageSquare className="w-4 h-4 text-sky-400" />
+                  Message Organizer
+                </button>
+              )}
             </div>
           </div>
+
         </div>
       </div>
 

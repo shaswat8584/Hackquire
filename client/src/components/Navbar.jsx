@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useChat } from '../context/ChatContext';
+import { useConnection } from '../context/ConnectionContext';
+import { LogoIcon } from './Logo';
 import {
-  Sparkles,
   LogOut,
   User,
   Menu,
@@ -11,10 +13,14 @@ import {
   Bell,
   Briefcase,
   Users,
+  MessageSquare,
+  UserPlus,
 } from 'lucide-react';
 
 const Navbar = ({ onOpenMobileMenu }) => {
   const { user, logout, isAuthenticated } = useAuth();
+  const { totalUnreadCount } = useChat();
+  const { pendingIncomingCount } = useConnection();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -39,13 +45,13 @@ const Navbar = ({ onOpenMobileMenu }) => {
               </button>
             )}
 
-            <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-sky-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
-                <Sparkles className="w-5 h-5" />
+            <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-3 group">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/70 p-1.5 flex items-center justify-center transition-all duration-200 group-hover:scale-105 shadow-sm border border-slate-200/80">
+                <LogoIcon className="w-full h-full" />
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-black tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-800 bg-clip-text text-transparent">
-                  SkillBridge
+                  Skill<span className="text-indigo-600">Bridge</span>
                 </span>
                 <span className="text-[10px] font-semibold text-indigo-600 -mt-1 tracking-wider uppercase">
                   Talent & Opportunity Exchange
@@ -65,6 +71,34 @@ const Navbar = ({ onOpenMobileMenu }) => {
                   <PlusCircle className="w-3.5 h-3.5 text-indigo-600" />
                   <span>Discover Opportunities</span>
                 </Link>
+
+                {/* Direct Messages Icon Button */}
+                <Link
+                  to="/messages"
+                  className="relative p-2 text-slate-600 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition-colors"
+                  title="Messages & Chat"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  {totalUnreadCount > 0 && (
+                    <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-black rounded-full shadow-sm animate-pulse">
+                      {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                    </span>
+                  )}
+                </Link>
+
+                {/* Network / Friend Requests Shortcut */}
+                {pendingIncomingCount > 0 && (
+                  <Link
+                    to="/network"
+                    className="relative p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors hidden sm:flex items-center gap-1 text-xs font-bold"
+                    title={`${pendingIncomingCount} pending connection request(s)`}
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>{pendingIncomingCount}</span>
+                  </Link>
+                )}
+
+
 
                 {/* Profile dropdown */}
                 <div className="relative">

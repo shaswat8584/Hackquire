@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useConnection } from '../context/ConnectionContext';
 import { matchingAPI, opportunityAPI, teamAPI } from '../services/api';
 import StudentCard from '../components/StudentCard';
 import OpportunityCard from '../components/OpportunityCard';
@@ -20,10 +21,23 @@ import {
   Plus,
   X,
   ExternalLink,
+  MessageSquare,
+  UserPlus,
+  UserCheck,
+  UserX,
 } from 'lucide-react';
+
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const {
+    connections,
+    acceptRequest,
+    rejectRequest,
+    cancelRequest,
+    removeConnection,
+  } = useConnection();
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'overview';
 
@@ -31,9 +45,12 @@ const Dashboard = () => {
   const [recommendedOpportunities, setRecommendedOpportunities] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [myTeams, setMyTeams] = useState([]);
-  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (activeTab === 'network') {
+      navigate('/network', { replace: true });
+    }
+  }, [activeTab, navigate]);
 
-  // Quick invite modal state
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [selectedStudentForInvite, setSelectedStudentForInvite] = useState(null);
   const [selectedStudentProfile, setSelectedStudentProfile] = useState(null);
@@ -296,6 +313,198 @@ const Dashboard = () => {
           )}
         </div>
       )}
+
+      {/* Network / Friends Section if activeTab === 'network' */}
+      {activeTab === 'network' && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <Users className="w-5 h-5 text-indigo-600" />
+                My Network & Student Connections
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Manage your friendships, pending connection requests, and teammates
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                to="/messages"
+                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1.5"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Open Messages
+              </Link>
+              <Link
+                to="/skillmatch"
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-sm shadow-indigo-200"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                Find Peers
+              </Link>
+            </div>
+          </div>
+
+          {/* Incoming Pending Requests */}
+          {connections.pendingIncoming.length > 0 && (
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-600" />
+                Pending Requests Received ({connections.pendingIncoming.length})
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {connections.pendingIncoming.map((req) => (
+                  <div
+                    key={req.connectionId}
+                    className="bg-white p-3.5 rounded-xl border border-amber-200/60 shadow-xs flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        src={req.requester?.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-slate-900 truncate">{req.requester?.name}</h4>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {req.requester?.preferredRoles?.[0] || req.requester?.skills?.[0] || 'Student Builder'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => acceptRequest(req.connectionId)}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1 shadow-xs"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => rejectRequest(req.connectionId)}
+                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold transition-colors"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Connected Friends List */}
+          <div>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+              Connected Friends ({connections.accepted.length})
+            </h3>
+
+            {connections.accepted.length === 0 ? (
+              <div className="text-center py-10 bg-slate-50 rounded-2xl border border-slate-100">
+                <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-xs font-bold text-slate-700">No connected friends yet</p>
+                <p className="text-[11px] text-slate-400 mt-1 max-w-sm mx-auto">
+                  Browse SkillMatch recommendations to discover like-minded students and send connection requests!
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {connections.accepted.map((conn) => (
+                  <div
+                    key={conn.connectionId}
+                    className="bg-white p-4 rounded-2xl border border-slate-200/80 hover:border-indigo-200 hover:shadow-sm transition-all flex flex-col justify-between"
+                  >
+                    <div className="flex items-start gap-3 mb-3">
+                      <img
+                        src={conn.peer?.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                        alt=""
+                        className="w-12 h-12 rounded-full object-cover border border-slate-200 shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-sm font-bold text-slate-900 truncate">{conn.peer?.name}</h4>
+                        <p className="text-xs text-indigo-600 font-medium truncate mt-0.5">
+                          {conn.peer?.preferredRoles?.[0] || conn.peer?.experienceLevel || 'Student Developer'}
+                        </p>
+                        <p className="text-[11px] text-slate-400 truncate mt-0.5">{conn.peer?.email}</p>
+                      </div>
+                    </div>
+
+                    {conn.peer?.skills?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {conn.peer.skills.slice(0, 3).map((skill, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-semibold rounded-md"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
+                      <button
+                        onClick={() => navigate(`/messages?user=${conn.peer?._id}`)}
+                        className="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        Message
+                      </button>
+                      <button
+                        onClick={() => removeConnection(conn.connectionId)}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                        title="Remove connection"
+                      >
+                        <UserX className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Outgoing Pending Requests */}
+          {connections.pendingOutgoing.length > 0 && (
+            <div className="pt-4 border-t border-slate-100">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                Sent Requests Awaiting Response ({connections.pendingOutgoing.length})
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {connections.pendingOutgoing.map((req) => (
+                  <div
+                    key={req.connectionId}
+                    className="p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={req.recipient?.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                        alt=""
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-800 truncate">{req.recipient?.name}</p>
+                        <span className="text-[10px] text-amber-600 font-semibold flex items-center gap-1">
+                          <Clock className="w-2.5 h-2.5" /> Request Pending
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => cancelRequest(req.connectionId)}
+                      className="text-[11px] text-rose-600 hover:text-rose-700 font-semibold px-2 py-1 hover:bg-rose-50 rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
 
       {/* Recommended For You Section - Section 14 Spec */}
       <div className="space-y-6">

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ConnectionProvider } from './context/ConnectionContext';
+import { ChatProvider } from './context/ChatContext';
 
 // Components
 import Navbar from './components/Navbar';
@@ -17,6 +19,10 @@ import Opportunities from './pages/Opportunities';
 import OpportunityDetails from './pages/OpportunityDetails';
 import TeamForge from './pages/TeamForge';
 import Profile from './pages/Profile';
+import Messages from './pages/Messages';
+import Network from './pages/Network';
+
+
 
 // Protected Route Wrapper with Shared Layout
 const ProtectedLayout = ({ children }) => {
@@ -69,96 +75,126 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public Landing */}
-          <Route
-            path="/"
-            element={
-              <div className="min-h-screen bg-slate-50 flex flex-col">
-                <Navbar />
-                <main className="flex-1">
-                  <Home />
-                </main>
-              </div>
-            }
-          />
+      <ConnectionProvider>
+        <ChatProvider>
+          <Router>
+            <Routes>
+              {/* Public Landing */}
+              <Route
+                path="/"
+                element={
+                  <div className="min-h-screen bg-slate-50 flex flex-col">
+                    <Navbar />
+                    <main className="flex-1">
+                      <Home />
+                    </main>
+                  </div>
+                }
+              />
 
-          {/* Auth Pages */}
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
+              {/* Auth Pages */}
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/register"
+                element={
+                  <PublicRoute>
+                    <Register />
+                  </PublicRoute>
+                }
+              />
 
-          {/* Protected Application Modules */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedLayout>
-                <Dashboard />
-              </ProtectedLayout>
-            }
-          />
-          <Route
-            path="/skillmatch"
-            element={
-              <ProtectedLayout>
-                <SkillMatch />
-              </ProtectedLayout>
-            }
-          />
-          <Route
-            path="/opportunities"
-            element={
-              <ProtectedLayout>
-                <Opportunities />
-              </ProtectedLayout>
-            }
-          />
-          <Route
-            path="/opportunities/:id"
-            element={
-              <ProtectedLayout>
-                <OpportunityDetails />
-              </ProtectedLayout>
-            }
-          />
-          <Route
-            path="/teams"
-            element={
-              <ProtectedLayout>
-                <TeamForge />
-              </ProtectedLayout>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedLayout>
-                <Profile />
-              </ProtectedLayout>
-            }
-          />
+              {/* Protected Application Modules */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedLayout>
+                    <Dashboard />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedLayout>
+                    <Messages />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/messages/:id"
+                element={
+                  <ProtectedLayout>
+                    <Messages />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/network"
+                element={
+                  <ProtectedLayout>
+                    <Network />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/skillmatch"
+                element={
+                  <ProtectedLayout>
+                    <SkillMatch />
+                  </ProtectedLayout>
+                }
+              />
 
-          {/* Catch-all fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <ChatWidget />
-      </Router>
+              <Route
+                path="/opportunities"
+                element={
+                  <ProtectedLayout>
+                    <Opportunities />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/opportunities/:id"
+                element={
+                  <ProtectedLayout>
+                    <OpportunityDetails />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/teams"
+                element={
+                  <ProtectedLayout>
+                    <TeamForge />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedLayout>
+                    <Profile />
+                  </ProtectedLayout>
+                }
+              />
+
+              {/* Catch-all fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+            <ChatWidget />
+          </Router>
+        </ChatProvider>
+      </ConnectionProvider>
     </AuthProvider>
   );
 }
 
 export default App;
+
