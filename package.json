@@ -1,0 +1,20 @@
+{
+  "name": "skillbridge",
+  "version": "1.0.0",
+  "description": "Full-Stack Student Skill & Opportunity Exchange Platform",
+  "scripts": {
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "seed": "cd server && npm run seed",
+    "test:matching": "node server/test_matching.js"
+  },
+  "keywords": [
+    "mern",
+    "skillbridge",
+    "react",
+    "express",
+    "mongodb"
+  ],
+  "author": "SkillBridge",
+  "license": "ISC"
+}
