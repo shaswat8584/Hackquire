@@ -470,6 +470,15 @@ SkillBridge includes a decoupled, reusable **AI FAQ & Support Assistant** micros
 - **Cors** (`^2.8.5`): Cross-Origin Resource Sharing policy management.
 - **Morgan** (`^1.10.0`): HTTP request logging for development.
 
+### AI Assistant Microservice Architecture
+
+- **Google Generative AI SDK** (`@google/generative-ai` `^0.24.1`): Official Google Gemini API client.
+- **Express** (`^5.2.1`): Lightweight REST endpoint hosting on port 5001.
+- **Dotenv** (`^17.4.2`): Environment variable loader.
+- **Cors** (`^2.8.6`): Cross-origin resource sharing for external portal access.
+- **Morgan** (`^1.11.0`): Request logging.
+
+
 ---
 
 ## 🧪 Verification & Testing
