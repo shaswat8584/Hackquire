@@ -1,4 +1,4 @@
-# 🚀 SkillBridge (Hackquire)
+# 🚀 SkillBridge
 
 ### Unified Student Talent, Opportunity & Team Formation Platform
 
